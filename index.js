@@ -2,7 +2,7 @@ module.exports = {
 
   init: function (params) {
 
-    params = (parmas || {
+    params = (params|| {
       dir: './logs', 
       file: '/log.txt',
       level: 'debug',
