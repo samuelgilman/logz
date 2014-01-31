@@ -8,7 +8,7 @@ module.exports = {
     var level = (params.level || 'debug');
     var dir = path.resolve(params.dir || './logs');
     var file = path.resolve(dir + (params.file || '/log.txt'));
-    var dev = (params.dev || true);
+    var dev = (params.console || true);
 
     that.fs = fs;
     that.path = path;
