@@ -25,7 +25,7 @@ logz.init({
   dir: './logs', // logs directory
   file: '/log.txt', // log file name
   level: 'debug', // err, info, debug
-  console:true // log to console
+  console: true // log to console
 });
 
 </pre>
