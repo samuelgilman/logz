@@ -2,13 +2,20 @@ module.exports = {
 
   init: function (params) {
 
+    params = (parmas || {
+      dir: './logs', 
+      file: '/log.txt',
+      level: 'debug',
+      console: true
+    });
+
     var that = this;
     var fs = require('fs');
     var path = require('path');
-    var level = (params.level || 'debug');
-    var dir = path.resolve(params.dir || './logs');
-    var file = path.resolve(dir + (params.file || '/log.txt'));
-    var dev = (params.console || true);
+    var level = params.level;
+    var dir = path.resolve(params.dir);
+    var file = path.resolve(dir + params.file);
+    var dev = params.console;
 
     that.fs = fs;
     that.path = path;
