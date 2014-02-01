@@ -2,19 +2,11 @@
 
 Logz is a simple, dependency free, Node.js module for logging.
 
-### Clone
+### Use 
 
 <pre>
-git clone https://github.com/samuelgilman/logz.git
+npm install logz
 </pre>
-
-### Require
-
-<pre>
-var logz = require('logz');
-</pre>
-
-### Initialize
 
 Logz must be initialized but if no params are sent on init the values below are used.
 
