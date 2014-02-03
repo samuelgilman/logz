@@ -53,7 +53,7 @@ module.exports = {
 
     fs.exists(file, function (exists) {
       if (!exists) {
-        fs.writeFileSync(file, ('LOGZ ' + time));
+        fs.writeFileSync(file, (time + ' Logz \n' ));
       }
     });
 
