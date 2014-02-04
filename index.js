@@ -24,12 +24,13 @@ module.exports = {
     that.level = level;
     that.dev = dev;
 
-    that.mkdir();
-    that.touch();
+    that.initMkdir();
+    that.initTouch();
+    that.initStream();
 
   },
 
-  mkdir: function () {
+  initMkdir: function () {
 
     var that = this;
     var fs = that.fs;
@@ -43,7 +44,7 @@ module.exports = {
 
   },
 
-  touch: function () {
+  initTouch: function () {
 
     var that = this;
     var fs = that.fs;
@@ -56,6 +57,17 @@ module.exports = {
         fs.writeFileSync(file, (time + ' Logz \n' ));
       }
     });
+
+  },
+
+  initStream: function () {
+
+    var that = this;
+    var fs = that.fs;
+    var file = that.file;
+    var stream = fs.createWriteStream(file);
+
+    that.stream = stream;
 
   },
 
@@ -94,7 +106,7 @@ module.exports = {
 
     var that = this;
     var fs = that.fs;
-    var file = that.file;
+    var stream = that.stream;
     var dev = that.dev;
     var date = new Date();
     var time = date.getTime();
@@ -105,13 +117,7 @@ module.exports = {
       console.log(message); 
     }
 
-    fs.appendFile(file, (message + '\n'), function (err) {
-
-      if (err) {
-        console.log('LOGZ ' + err);
-      }
-
-    });
+    stream.write((message + '\n'));
 
   }
 
