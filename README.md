@@ -1,4 +1,6 @@
-# logz
+# Logz
+
+Version: 1.1.0
 
 Logz is a simple, dependency free, Node.js module for logging.
 
@@ -14,7 +16,7 @@ below are used.
 
     logz.init({
       dir: './logs', // logs directory
-      file: '/log.txt', // log file name
+      file: 'log.txt', // log file name
       level: 'debug', // err, info, debug
       console: true // log to console
     }, cb);
@@ -30,8 +32,16 @@ It's okay to use the log before it is ready. but if any log entries are made
 (with `err`, `info`, etc.) before the log is ready, they will be queued in
 memory, and flushed to the log stream once it's ready.
 
+#### Async logging
+
 Same goes for the logging functions (`err`, etc) - they are async because
 data needs to be written to the stream.
+
+It's not necessary to use callback with the logging function. Use them only
+if you want to know when the data was actually written.
+
+In any case, the timestamp will be for when the function was called, and not
+for when the data was written.
 
 ### Format
 
