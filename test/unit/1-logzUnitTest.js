@@ -8,18 +8,16 @@ describe('Logz module', function() {
     var oDir, // original process working dir
         wDir; //current process working dir
 
-    before(function() {
-
-        oDir = process.cwd();
-
-    });
-
-    beforeEach(function(done) {
+    var changeCWD = function(done) {
 
         // Before testing each function of the module,
         // we want to create a temporary directory in
         // which all log files and directories will be
         // created.
+
+        // note that 'tmp.dir' is async, so we have to
+        // call 'done()' when the callback is finished
+        // to make sure this 'beforeEach' hook is synched.
 
         tmp.dir(function(err, path) {
 
@@ -41,16 +39,30 @@ describe('Logz module', function() {
 
         });
 
+    }
+
+    before(function() {
+
+        // before doing anything and changing the
+        // working directory, we have to save the
+        // current directory in which the 'logz'
+        // module resides, so we can import it.
+
+        oDir = process.cwd();
+
     });
 
-    describe("function 'init' with default params", function() {
+    describe("Default params", function() {
 
         var logz;
 
-        before(function() {
+        before(changeCWD);
+
+        before(function(done) {
 
             logz = require(path.resolve(oDir));
             logz.init();
+            done();
 
         });
 
@@ -59,13 +71,11 @@ describe('Logz module', function() {
             var logzDir = path.resolve(logz.dir),
                 defDir = path.resolve("./logs"),
                 logzFile = path.resolve(logz.file),
-                defFile = path.resolve("/log.txt", defDir),
+                defFile = path.resolve(defDir, "log.txt"),
                 logzLevel = logz.level,
                 defLevel = 'debug',
                 logzDev = logz.dev,
                 defDev = true;
-
-            console.log("DEF: " + defDir);
 
             assert.equal(logzDir, defDir);
             assert.equal(logzFile, defFile);
@@ -74,18 +84,55 @@ describe('Logz module', function() {
 
         });
 
+        it('should create a log file', function(done) {
+
+            fs.exists(path.resolve(logz.file), function(exists) {
+                assert.equal(exists, true);
+                done();
+            });
+
+        });
+
+        it('should log errors', function(done) {
+
+            var errorText = "Lorem ipsum dolor";
+
+            logz.err(errorText, function() {
+
+                fs.readFile(path.resolve(logz.file), 'utf-8', function(err, data) {
+
+                    if (err) throw err;
+
+                    var lines = data.trim().split('\n');
+                    var lastLine = lines.slice(-1)[0];
+
+                    assert.notEqual(lastLine.indexOf(errorText), -1,
+                        "Error text was not logged");
+                    assert.notEqual(lastLine.indexOf("ERROR"), -1,
+                        "Log message not logged as an error")
+
+                    done();
+
+                });
+
+            });
+
+        })
+
     });
 
-    describe("function 'init' with custom params", function() {
+    describe("Custom params", function() {
 
         var logz;
+
+        before(changeCWD);
 
         before(function(done) {
 
             logz = require(path.resolve(oDir)),
             cusParams = {
                 dir: "./journal",
-                file: "/journal.txt",
+                file: "journal.txt",
                 level: "info",
                 console: false
             };
@@ -100,16 +147,16 @@ describe('Logz module', function() {
 
         });
 
-        it('should use params when params are passed', function() {
+        it('should use custom params', function() {
 
             var logzDir = path.resolve(logz.dir),
                 cusDir = path.resolve(cusParams.dir),
                 logzFile = path.resolve(logz.file),
-                cusFile = path.resolve(cusParams.file),
+                cusFile = path.resolve(cusDir, cusParams.file),
                 logzLevel = logz.level,
                 cusLevel = cusParams.level,
                 logzDev = logz.dev,
-                cusDev = cusParams.dev;
+                cusDev = cusParams.console;
 
             assert.equal(logzDir, cusDir);
             assert.equal(logzFile, cusFile);

@@ -4,7 +4,7 @@ module.exports = {
 
     params = (params || {
       dir: './logs',
-      file: '/log.txt',
+      file: 'log.txt',
       level: 'debug',
       console: true
     });
@@ -14,7 +14,7 @@ module.exports = {
     var path = require('path');
     var level = params.level;
     var dir = path.resolve(params.dir);
-    var file = path.resolve(params.file, dir);
+    var file = path.resolve(dir, params.file);
     var dev = params.console;
 
     that.fs = fs;
@@ -30,7 +30,7 @@ module.exports = {
 
       that.initStream(function() {
 
-        that.initTouch();
+        that._setReady();
 
       });
 
@@ -74,7 +74,10 @@ module.exports = {
     while (msg = that._msgQueue.shift()) {
       that.stream.write(msg + "\n");
     }
+
     that._ready = true;
+
+    if (next) next();
 
   },
 
@@ -141,6 +144,7 @@ module.exports = {
       stream.write(message + '\n', next);
     } else {
       that._msgQueue.push(message);
+      if (next) next();
     }
 
   }
