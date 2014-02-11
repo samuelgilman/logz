@@ -1,10 +1,16 @@
 {
-  "name": "logz",
-  "version": "1.0.2",
-  "private": false,
-  "engines": {
-    "node": "*",
-    "npm": "*"
-  },
-  "dependencies": {}
+    "name": "logz",
+    "version": "1.0.2",
+    "private": false,
+    "engines": {
+        "node": "*",
+        "npm": "*"
+    },
+    "devDependencies": {
+        "mocha" : "1.17.1",
+        "tmp" : "0.0.23"
+    },
+    "scripts" : {
+        "unit" : "mocha -R spec ./test/unit/"
+    }
 }

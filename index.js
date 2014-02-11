@@ -1,9 +1,9 @@
 module.exports = {
 
-  init: function (params) {
+  init: function(params) {
 
     params = (params || {
-      dir: './logs', 
+      dir: './logs',
       file: '/log.txt',
       level: 'debug',
       console: true
@@ -14,7 +14,7 @@ module.exports = {
     var path = require('path');
     var level = params.level;
     var dir = path.resolve(params.dir);
-    var file = path.resolve(dir + params.file);
+    var file = path.resolve(params.file, dir);
     var dev = params.console;
 
     that.fs = fs;
@@ -23,44 +23,62 @@ module.exports = {
     that.file = file;
     that.level = level;
     that.dev = dev;
+    that._ready = false;
+    that._msgQueue = [];
 
-    that.initMkdir();
-    that.initTouch();
-    that.initStream();
+    that.initMkdir(function() {
+
+      that.initStream(function() {
+
+        that.initTouch();
+
+      });
+
+    });
 
   },
 
-  initMkdir: function () {
+  isReady: function() {
+
+    var that = this;
+
+    return that._ready;
+
+  },
+
+  initMkdir: function(next) {
 
     var that = this;
     var fs = that.fs;
     var dir = that.dir;
 
-    fs.exists(dir, function (exists) {
-      if (!exists) {
-        fs.mkdirSync(dir);
-      }
+    fs.mkdir(dir, function(err) {
+
+      // TODO:
+      // Check for 'err' errors.
+      // Possible errors:
+      // 1. Directory already exists. In that case continue.
+      // 2. File system errors, etc.
+
+      next();
+
     });
 
   },
 
-  initTouch: function () {
+  _setReady: function(next) {
 
     var that = this;
-    var fs = that.fs;
-    var file = that.file;
-    var date = new Date();
-    var time = date.getTime();
+    var msg;
 
-    fs.exists(file, function (exists) {
-      if (!exists) {
-        fs.writeFileSync(file, (time + ' Logz \n' ));
-      }
-    });
+    while (msg = that._msgQueue.shift()) {
+      that.stream.write(msg + "\n");
+    }
+    that._ready = true;
 
   },
 
-  initStream: function () {
+  initStream: function(next) {
 
     var that = this;
     var fs = that.fs;
@@ -69,40 +87,42 @@ module.exports = {
 
     that.stream = stream;
 
+    next();
+
   },
 
-  err: function (message) {
+  err: function(message, next) {
 
     var that = this;
     var logger = that.logger;
 
-    that.log('ERROR ' + message);
+    that.log('ERROR ' + message, next);
 
   },
 
-  info: function (message) {
+  info: function(message, next) {
 
     var that = this;
     var level = that.level;
 
     if (level === 'info' || level === 'debug') {
-      that.log('INFO ' + message);
+      that.log('INFO ' + message, next);
     }
 
   },
 
-  debug: function (message) {
+  debug: function(message, next) {
 
     var that = this;
     var level = that.level;
 
     if (level === 'debug') {
-      that.log('DEBUG ' + message);
+      that.log('DEBUG ' + message, next);
     }
 
   },
 
-  log: function (message) {
+  log: function(message, next) {
 
     var that = this;
     var fs = that.fs;
@@ -111,13 +131,17 @@ module.exports = {
     var date = new Date();
     var time = date.getTime();
 
-    message = (time + ' ' + message);
+    message = time + ' ' + message;
 
     if (dev) {
-      console.log(message); 
+      console.log(message);
     }
 
-    stream.write((message + '\n'));
+    if (that.isReady()) {
+      stream.write(message + '\n', next);
+    } else {
+      that._msgQueue.push(message);
+    }
 
   }
 
